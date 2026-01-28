@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini GTA with Sounds</title>
+<title>Mini GTA 3D Mouse Control</title>
 <style>
-body { margin:0; overflow:hidden; background:#000; }
-#hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black;}
+body { margin:0; overflow:hidden; background:#000; font-family:sans-serif;}
+#hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black; }
+#instructions { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:24px; cursor:pointer; }
 </style>
 </head>
 <body>
 <div id="hud">Health: 100 | Score: 0</div>
+<div id="instructions">Click to play and enable mouse control</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
 
@@ -18,13 +21,12 @@ body { margin:0; overflow:hidden; background:#000; }
 <audio id="crashSound" src="https://freesound.org/data/previews/198/198841_2859977-lq.mp3"></audio>
 
 <script>
-// Scene
+// Scene and camera
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 
-// Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0,10,20);
+camera.position.set(0,5,10);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -55,13 +57,11 @@ for(let i=0;i<30;i++){
   scene.add(b);
 }
 
-// Player
-const playerGeo = new THREE.BoxGeometry(2,1,4);
-const playerMat = new THREE.MeshStandardMaterial({color:0xff0000});
-const player = new THREE.Mesh(playerGeo, playerMat);
+// Player (invisible box for collision)
+const player = new THREE.Mesh(new THREE.BoxGeometry(2,1,4), new THREE.MeshBasicMaterial({visible:false}));
 player.position.set(0,0.5,0);
 scene.add(player);
-let playerSpeed=0, playerAngle=0, playerHealth=100, score=0;
+let playerSpeed=0, playerHealth=100, score=0;
 
 // Enemies
 const enemies = [];
@@ -76,6 +76,12 @@ function spawnEnemy(){
 for(let i=0;i<5;i++) spawnEnemy();
 
 // Controls
+const controls = new THREE.PointerLockControls(camera, document.body);
+document.getElementById('instructions').addEventListener('click', ()=>{
+  controls.lock();
+  document.getElementById('instructions').style.display = 'none';
+});
+
 let keys={};
 document.addEventListener('keydown', e=> keys[e.key.toLowerCase()]=true);
 document.addEventListener('keyup', e=> keys[e.key.toLowerCase()]=false);
@@ -83,53 +89,46 @@ document.addEventListener('keyup', e=> keys[e.key.toLowerCase()]=false);
 // Shooting
 const bullets=[];
 const shootSound = document.getElementById('shootSound');
-document.addEventListener('keydown', e=>{
-  if(e.key===' '){
-    const bGeo = new THREE.SphereGeometry(0.2,8,8);
-    const bMat = new THREE.MeshBasicMaterial({color:0xffff00});
-    const bullet = new THREE.Mesh(bGeo,bMat);
-    bullet.position.set(player.position.x, player.position.y+0.5, player.position.z);
-    const dir = new THREE.Vector3(Math.sin(playerAngle),0,Math.cos(playerAngle));
-    bullets.push({mesh:bullet, direction:dir});
-    scene.add(bullet);
-    shootSound.play();
-  }
+document.addEventListener('mousedown', e=>{
+  const bGeo = new THREE.SphereGeometry(0.2,8,8);
+  const bMat = new THREE.MeshBasicMaterial({color:0xffff00});
+  const bullet = new THREE.Mesh(bGeo,bMat);
+  bullet.position.set(player.position.x, player.position.y+0.5, player.position.z);
+  const vector = new THREE.Vector3(0,0,-1);
+  vector.applyQuaternion(camera.quaternion);
+  bullets.push({mesh:bullet, direction:vector});
+  scene.add(bullet);
+  shootSound.play();
 });
 
 // Collision detection
 function checkCollision(a,b){
-  return a.position.x - a.geometry.parameters.width/2 < b.position.x + b.geometry.parameters.width/2 &&
-         a.position.x + a.geometry.parameters.width/2 > b.position.x - b.geometry.parameters.width/2 &&
-         a.position.z - a.geometry.parameters.depth/2 < b.position.z + b.geometry.parameters.depth/2 &&
-         a.position.z + a.geometry.parameters.depth/2 > b.position.z - b.geometry.parameters.depth/2;
+  return a.position.x - 1 < b.position.x + b.geometry.parameters.width/2 &&
+         a.position.x + 1 > b.position.x - b.geometry.parameters.width/2 &&
+         a.position.z - 2 < b.position.z + b.geometry.parameters.depth/2 &&
+         a.position.z + 2 > b.position.z - b.geometry.parameters.depth/2;
 }
 
-// Animate
 const crashSound = document.getElementById('crashSound');
+
+// Animate
 function animate(){
   requestAnimationFrame(animate);
 
   // Player movement
-  if(keys['w']) playerSpeed=Math.min(playerSpeed+0.1,0.5);
-  else if(keys['s']) playerSpeed=Math.max(playerSpeed-0.1,-0.25);
-  else playerSpeed*=0.9;
+  let forward = keys['w']?0.5:0, backward=keys['s']?0.25:0;
+  let left = keys['a']?1:0, right = keys['d']?1:0;
 
-  if(keys['a']) playerAngle+=0.03;
-  if(keys['d']) playerAngle-=0.03;
+  const dir = new THREE.Vector3();
+  controls.getDirection(dir);
+  dir.y=0;
+  dir.normalize();
+  player.position.addScaledVector(dir, forward-backward);
 
-  player.position.x += Math.sin(playerAngle)*playerSpeed*10;
-  player.position.z += Math.cos(playerAngle)*playerSpeed*10;
-  player.rotation.y = playerAngle;
+  const strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0));
+  player.position.addScaledVector(strafe, right-left);
 
-  // Ground collision (solid)
-  player.position.x = Math.max(-250, Math.min(player.position.x, 250));
-  player.position.z = Math.max(-250, Math.min(player.position.z, 250));
-
-  // Camera follow
-  camera.position.x = player.position.x - Math.sin(playerAngle)*10;
-  camera.position.z = player.position.z - Math.cos(playerAngle)*10;
-  camera.position.y = 10;
-  camera.lookAt(player.position);
+  camera.position.set(player.position.x, player.position.y+2, player.position.z);
 
   // Bullets movement
   bullets.forEach((b,i)=>{
@@ -137,7 +136,7 @@ function animate(){
     if(b.mesh.position.length()>1000) scene.remove(b.mesh), bullets.splice(i,1);
   });
 
-  // Enemy AI & collisions
+  // Enemy AI
   enemies.forEach((e)=>{
     const dx = player.position.x - e.position.x;
     const dz = player.position.z - e.position.z;
