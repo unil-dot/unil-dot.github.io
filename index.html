@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini GTA 3D Mouse Control</title>
+<title>Mini GTA 3D</title>
 <style>
 body { margin:0; overflow:hidden; background:#000; font-family:sans-serif;}
 #hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black; }
@@ -128,6 +128,11 @@ function animate(){
   const strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0));
   player.position.addScaledVector(strafe, right-left);
 
+  // Map boundaries
+  player.position.x = Math.max(-250, Math.min(player.position.x, 250));
+  player.position.z = Math.max(-250, Math.min(player.position.z, 250));
+
+  // Camera follow
   camera.position.set(player.position.x, player.position.y+2, player.position.z);
 
   // Bullets movement
