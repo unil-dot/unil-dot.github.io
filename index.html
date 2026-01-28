@@ -3,150 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Learn Korean | Video Lessons</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<title>FakeBook - Social Network</title>
 <style>
-    body {
-        margin:0; padding:0; font-family:'Nunito',sans-serif; background:#141414; color:#fff;
-    }
-    a { text-decoration:none; color:#fff; }
-    header {
-        position:fixed; top:0; width:100%; z-index:1000;
-        background: rgba(20,20,20,0.9); display:flex; justify-content:space-between; align-items:center; padding:10px 50px;
-    }
-    header .logo { font-size:1.8rem; font-weight:700; color:#e50914; }
-    nav ul { list-style:none; display:flex; gap:20px; }
-    nav ul li a:hover { color:#e50914; }
-    .hero {
-        background:url('https://images.unsplash.com/photo-1617196036237-7bff0a8e8f1d?auto=format&fit=crop&w=1470&q=80') no-repeat center/cover;
-        height:70vh; display:flex; align-items:center; justify-content:center; text-align:center;
-    }
-    .hero .overlay { background:rgba(0,0,0,0.6); padding:50px; border-radius:10px; }
-    .hero h1 { font-size:2.5rem; margin-bottom:20px; }
-    .hero p { font-size:1.2rem; margin-bottom:20px; }
-    .btn-primary { background:#e50914; color:#fff; padding:12px 25px; border-radius:5px; font-weight:700; transition:.3s; }
-    .btn-primary:hover { background:#f6121d; }
+/* ===== Reset ===== */
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+body { background:#f0f2f5; color:#1c1e21; }
 
-    section { padding:80px 50px 50px 50px; }
-    .level-title { font-size:2rem; color:#e50914; margin-bottom:30px; }
+/* ===== Header ===== */
+header {
+    background:#1877f2; color:#fff; padding:10px 50px; display:flex; justify-content:space-between; align-items:center;
+    position:sticky; top:0; z-index:1000;
+}
+header h1 { font-size:1.8rem; font-weight:bold; }
+header nav a {
+    color:#fff; margin-left:20px; text-decoration:none; font-weight:600;
+}
+header nav a:hover { text-decoration:underline; }
 
-    .level-carousel {
-        display:flex; overflow-x:auto; gap:20px; padding-bottom:20px;
-    }
-    .level-carousel::-webkit-scrollbar { display:none; }
-    .lesson-card {
-        min-width:300px; background:#1e1e1e; padding:20px; border-radius:10px; flex:0 0 auto;
-        box-shadow:0 5px 20px rgba(0,0,0,0.5); transition:.3s; cursor:pointer;
-    }
-    .lesson-card:hover { transform:scale(1.05); }
-    .lesson-card h3 { margin-bottom:10px; color:#ffd700; }
-    .lesson-card p { font-size:.95rem; margin-bottom:10px; }
-    .lesson-card iframe { width:100%; height:180px; border-radius:10px; margin-top:10px; }
+/* ===== Hero/Login Section ===== */
+#login-section {
+    display:flex; justify-content:center; align-items:center; height:80vh; flex-wrap:wrap; gap:50px;
+}
+#login-section .login-box {
+    background:#fff; padding:40px; border-radius:10px; width:350px; box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+#login-section h2 { text-align:center; margin-bottom:20px; color:#1877f2; }
+#login-section input {
+    width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc;
+}
+#login-section button {
+    width:100%; padding:10px; background:#1877f2; color:#fff; font-weight:bold; border:none; border-radius:5px; cursor:pointer;
+}
+#login-section button:hover { background:#165ec6; }
 
-    .lesson-links a { display:block; color:#ffd700; margin:5px 0; }
-    
-    footer { background:#141414; text-align:center; padding:20px 0; color:#888; margin-top:50px; }
+/* ===== Newsfeed Section ===== */
+#newsfeed { padding:20px 50px; display:none; }
+.news-card {
+    background:#fff; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+.news-card h3 { color:#1877f2; margin-bottom:10px; }
+.news-card p { margin-bottom:10px; }
+.news-card img { width:100%; border-radius:10px; }
+
+/* ===== Sidebar ===== */
+.sidebar {
+    position:fixed; top:60px; left:0; width:200px; height:100%; padding:20px; background:#fff; box-shadow:2px 0 5px rgba(0,0,0,0.1);
+}
+.sidebar h4 { margin-bottom:15px; color:#1877f2; }
+.sidebar a { display:block; color:#1c1e21; margin:5px 0; text-decoration:none; }
+.sidebar a:hover { text-decoration:underline; }
+
+/* ===== Responsive ===== */
+@media(max-width:900px) {
+    #login-section { flex-direction:column; }
+    .sidebar { display:none; }
+}
 </style>
 </head>
 <body>
 
+<!-- Header -->
 <header>
-    <div class="logo">LearnKorean</div>
+    <h1>FakeBook</h1>
     <nav>
-        <ul>
-            <li><a href="#level0">Level 0</a></li>
-            <li><a href="#level1">Level 1</a></li>
-            <li><a href="#level2">Level 2</a></li>
-        </ul>
+        <a href="#">Sign Up</a>
+        <a href="#">Login</a>
     </nav>
 </header>
 
-<section class="hero">
-    <div class="overlay">
-        <h1>Learn Korean With Videos & Links</h1>
-        <p>Watch lessons, practice exercises, and access helpful resources.</p>
-        <a href="#level0" class="btn-primary">Start Learning</a>
+<!-- Login Section -->
+<section id="login-section">
+    <div class="login-box">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Email or Phone">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Log In</button>
+        <p style="text-align:center; margin-top:10px;"><a href="#">Forgot Password?</a></p>
     </div>
 </section>
 
-<!-- Level 0 -->
-<section id="level0">
-    <h2 class="level-title">Level 0: Beginner</h2>
-    <div class="level-carousel">
-        <div class="lesson-card">
-            <h3>Hangul Consonants</h3>
-            <iframe src="https://www.youtube.com/embed/6v2L2UGZJAM" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.learn-korean.net/hangul-consonants" target="_blank">Extra Reading</a>
-            </div>
-        </div>
-        <div class="lesson-card">
-            <h3>Hangul Vowels</h3>
-            <iframe src="https://www.youtube.com/embed/6LxV1Y2bGOs" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.learn-korean.net/hangul-vowels" target="_blank">Extra Reading</a>
-            </div>
-        </div>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <h4>Menu</h4>
+    <a href="#">Home</a>
+    <a href="#">Profile</a>
+    <a href="#">Friends</a>
+    <a href="#">Messages</a>
+    <a href="#">Notifications</a>
+</div>
+
+<!-- Newsfeed -->
+<section id="newsfeed">
+    <div class="news-card">
+        <h3>John Doe</h3>
+        <p>Just had a great day at the park! 🌳</p>
+        <img src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=700&q=80" alt="Park">
+    </div>
+    <div class="news-card">
+        <h3>Jane Smith</h3>
+        <p>Loving my new coffee place ☕</p>
+        <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=700&q=80" alt="Coffee">
     </div>
 </section>
-
-<!-- Level 1 -->
-<section id="level1">
-    <h2 class="level-title">Level 1: Beginner</h2>
-    <div class="level-carousel">
-        <div class="lesson-card">
-            <h3>Daily Expressions</h3>
-            <iframe src="https://www.youtube.com/embed/YL6nz3xM-0A" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.koreanclass101.com/daily-expressions" target="_blank">Extra Resources</a>
-            </div>
-        </div>
-        <div class="lesson-card">
-            <h3>Numbers 11-20</h3>
-            <iframe src="https://www.youtube.com/embed/3O0bZrnq7yA" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.learn-korean.net/numbers" target="_blank">Extra Resources</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Level 2 -->
-<section id="level2">
-    <h2 class="level-title">Level 2: Intermediate</h2>
-    <div class="level-carousel">
-        <div class="lesson-card">
-            <h3>Common Verbs</h3>
-            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.koreanverb.com/common-verbs" target="_blank">Extra Resources</a>
-            </div>
-        </div>
-        <div class="lesson-card">
-            <h3>Simple Sentences</h3>
-            <iframe src="https://www.youtube.com/embed/3GwjfUFyY6M" allowfullscreen></iframe>
-            <div class="lesson-links">
-                <a href="https://www.learn-korean.net/sentences" target="_blank">Extra Resources</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<footer>
-    &copy; 2026 LearnKorean | All rights reserved
-</footer>
 
 <script>
-    // Smooth scroll for nav links
-    document.querySelectorAll('nav ul li a, .btn-primary').forEach(link=>{
-        link.addEventListener('click', function(e){
-            if(this.hash !== ""){
-                e.preventDefault();
-                const hash = this.hash;
-                document.querySelector(hash).scrollIntoView({behavior:'smooth'});
-            }
-        });
-    });
+// Simple login simulation
+function login(){
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if(username && password){
+        alert("Login Successful! Welcome, " + username);
+        document.getElementById('login-section').style.display='none';
+        document.getElementById('newsfeed').style.display='block';
+        document.getElementById('sidebar').style.display='block';
+    } else {
+        alert("Please enter username and password.");
+    }
+}
 </script>
 
 </body>
