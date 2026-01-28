@@ -1,148 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Unil Meche | Personal Website</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Learning Portal | Level 0-2</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(120deg, #1f2933, #111827);
-      color: #ffffff;
-      text-align: center;
-    }
-    .container {
-      padding: 80px 20px;
-      max-width: 800px;
-      margin: auto;
-    }
-    h1 {
-      font-size: 2.5rem;
-    }
-    p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-    .card {
-      background: rgba(255,255,255,0.08);
-      padding: 25px;
-      border-radius: 12px;
-      margin-top: 40px;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 25px;
-      padding: 12px 24px;
-      background: #22c55e;
-      color: #000;
-      text-decoration: none;
-      border-radius: 25px;
-      font-weight: bold;
-    }
-    footer {
-      margin-top: 60px;
-      font-size: 0.9rem;
-      opacity: 0.6;
-    }
-    .korean-section {
-  margin-top: 40px;
-  text-align: center;
+    /* Reset & Fonts */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Nunito', sans-serif;
+    line-height: 1.6;
+    background-color: #fdfdfd;
+    color: #333;
 }
 
-.korean-section h2 {
-  font-size: 26px;
-  margin-bottom: 5px;
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
 }
 
-.subtitle {
-  font-size: 14px;
-  opacity: 0.7;
-  margin-bottom: 25px;
+/* Header */
+header {
+    background-color: #4b6cb7;
+    background-image: linear-gradient(315deg, #4b6cb7 0%, #182848 74%);
+    color: #fff;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+header .logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+header nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+header nav ul li a:hover {
+    color: #ffd700;
 }
 
-.korean-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+/* Hero Section */
+.hero {
+    background: url('https://images.unsplash.com/photo-1617196036237-7bff0a8e8f1d?auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+    color: #fff;
+    text-align: center;
+    padding: 100px 20px;
+}
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+.btn-primary {
+    background-color: #ffd700;
+    color: #333;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+}
+.btn-primary:hover {
+    background-color: #ffbf00;
 }
 
-.korean-box {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: left;
+/* Levels Section */
+.levels {
+    padding: 80px 0;
+    background-color: #f5f5f5;
+    text-align: center;
+}
+.levels h2 {
+    font-size: 2rem;
+    margin-bottom: 50px;
+}
+.level-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+.card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.card h3 {
+    margin-bottom: 15px;
+    color: #4b6cb7;
+}
+.card p {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+.btn-secondary {
+    background-color: #4b6cb7;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+}
+.btn-secondary:hover {
+    background-color: #3a539b;
 }
 
-.korean-box h3 {
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.korean-box ul {
-  padding-left: 18px;
-}
-
-.korean-box li {
-  margin-bottom: 6px;
-}
-
-.korean-box span {
-  font-size: 13px;
-  opacity: 0.7;
+/* Footer */
+footer {
+    background-color: #182848;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
 }
 
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>👋 Hi, I’m Unil</h1>
-    <p>Learning • Building • Growing</p>
+    <!-- Header / Navigation -->
+    <header>
+        <div class="container">
+            <h1 class="logo">LearnKorean</h1>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#level0">Level 0</a></li>
+                    <li><a href="#level1">Level 1</a></li>
+                    <li><a href="#level2">Level 2</a></li>
+                    <li><a href="#resources">Resources</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-    <div class="card">
-      <p>
-        I created this website for free using GitHub Pages.<br>
-        I’m exploring technology, languages, and new ideas step by step.
-      </p>
-      <a class="btn" href="#">Contact Me</a>
-    </div> 
-    <div class="korean-section">
-  <h2>🇰🇷 Korean Learning Hub</h2>
-  <p class="subtitle">Simple • Practical • EPS-TOPIK focused</p>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h2>Start Your Korean Language Journey</h2>
+            <p>From absolute beginner to intermediate — Level 0 to Level 2 lessons, exercises, and resources.</p>
+            <a href="#level0" class="btn-primary">Start Learning Level 0</a>
+        </div>
+    </section>
 
-  <div class="korean-grid">
+    <!-- Level Overview Section -->
+    <section class="levels">
+        <div class="container">
+            <h2>Choose Your Level</h2>
+            <div class="level-cards">
+                <div class="card">
+                    <h3>Level 0</h3>
+                    <p>Absolute beginners. Learn Hangul, basic greetings, and pronunciation.</p>
+                    <a href="#level0" class="btn-secondary">Go to Level 0</a>
+                </div>
+                <div class="card">
+                    <h3>Level 1</h3>
+                    <p>Beginner level. Learn simple sentences, numbers, and daily expressions.</p>
+                    <a href="#level1" class="btn-secondary">Go to Level 1</a>
+                </div>
+                <div class="card">
+                    <h3>Level 2</h3>
+                    <p>Intermediate beginner. Expand vocabulary, grammar, and conversational skills.</p>
+                    <a href="#level2" class="btn-secondary">Go to Level 2</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="korean-box">
-      <h3>📖 Daily Words</h3>
-      <ul>
-        <li>사람 (saram) – person</li>
-        <li>물 (mul) – water</li>
-        <li>일 (il) – work</li>
-        <li>집 (jip) – house</li>
-      </ul>
-    </div>
-
-    <div class="korean-box">
-      <h3>🗣️ Basic Sentences</h3>
-      <p>안녕하세요? <br><span>Hello</span></p>
-      <p>저는 일합니다. <br><span>I work.</span></p>
-      <p>물 주세요. <br><span>Please give water.</span></p>
-    </div>
-
-    <div class="korean-box">
-      <h3>⏰ Daily Routine</h3>
-      <p>📱 Apps practice – 30 min</p>
-      <p>✍️ Writing words – 30 min</p>
-      <p>🔁 Revision – 20 min</p>
-    </div>
-
-  </div>
-</div>
-
+    <!-- Footer -->
     <footer>
-      © 2026 Unil Meche
+        <div class="container">
+            <p>&copy; 2026 LearnKorean. All rights reserved.</p>
+        </div>
     </footer>
-  </div>
+
+    <!-- JavaScript -->
+    <script src="script.js">
+      // Smooth scroll for navigation links
+document.querySelectorAll('nav ul li a, .btn-primary, .btn-secondary').forEach(link => {
+    link.addEventListener('click', function(e) {
+        if(this.hash !== "") {
+            e.preventDefault();
+            const hash = this.hash;
+            document.querySelector(hash).scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+    </script>
 </body>
 </html>
+
