@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Mini GTA Browser</title>
+<title>Mini GTA with Sounds</title>
 <style>
-body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-canvas { display: block; }
-#hud { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 20px; text-shadow: 2px 2px 5px black;}
-#minimap { position: absolute; top: 10px; right: 10px; width: 200px; height: 120px; background: rgba(0,0,0,0.5);}
+body { margin:0; overflow:hidden; background:#000; }
+#hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black;}
 </style>
 </head>
 <body>
 <div id="hud">Health: 100 | Score: 0</div>
-<canvas id="minimap"></canvas>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
+
+<audio id="shootSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
+<audio id="crashSound" src="https://freesound.org/data/previews/198/198841_2859977-lq.mp3"></audio>
 
 <script>
 // Scene
@@ -30,7 +31,7 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Light
+// Lights
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(50,100,50);
 scene.add(light);
@@ -38,18 +39,18 @@ scene.add(new THREE.AmbientLight(0x404040));
 
 // Ground
 const groundGeo = new THREE.PlaneGeometry(500,500,50,50);
-const groundMat = new THREE.MeshStandardMaterial({color:0x333333});
-const ground = new THREE.Mesh(groundGeo,groundMat);
+const groundMat = new THREE.MeshStandardMaterial({color:0x555555});
+const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
 // Buildings
 const buildings = [];
-for(let i=0;i<50;i++){
-  const bGeo = new THREE.BoxGeometry(Math.random()*10+10, Math.random()*20+10, Math.random()*10+10);
-  const bMat = new THREE.MeshStandardMaterial({color: Math.random()*0xffffff});
-  const b = new THREE.Mesh(bGeo,bMat);
-  b.position.set((Math.random()-0.5)*400, bGeo.parameters.height/2, (Math.random()-0.5)*400);
+for(let i=0;i<30;i++){
+  const geo = new THREE.BoxGeometry(Math.random()*10+10, Math.random()*30+10, Math.random()*10+10);
+  const mat = new THREE.MeshStandardMaterial({color: Math.random()*0xffffff});
+  const b = new THREE.Mesh(geo, mat);
+  b.position.set((Math.random()-0.5)*400, geo.parameters.height/2, (Math.random()-0.5)*400);
   buildings.push(b);
   scene.add(b);
 }
@@ -57,50 +58,43 @@ for(let i=0;i<50;i++){
 // Player
 const playerGeo = new THREE.BoxGeometry(2,1,4);
 const playerMat = new THREE.MeshStandardMaterial({color:0xff0000});
-const player = new THREE.Mesh(playerGeo,playerMat);
+const player = new THREE.Mesh(playerGeo, playerMat);
 player.position.set(0,0.5,0);
 scene.add(player);
-let playerSpeed = 0;
-let playerAngle = 0;
-let playerHealth = 100;
-let score = 0;
+let playerSpeed=0, playerAngle=0, playerHealth=100, score=0;
 
 // Enemies
 const enemies = [];
 function spawnEnemy(){
   const geo = new THREE.BoxGeometry(2,1,4);
-  const mat = new THREE.MeshStandardMaterial({color:0x3498db});
+  const mat = new THREE.MeshStandardMaterial({color:0x0000ff});
   const e = new THREE.Mesh(geo,mat);
   e.position.set((Math.random()-0.5)*400,0.5,(Math.random()-0.5)*400);
   enemies.push(e);
   scene.add(e);
 }
-
-// Spawn initial enemies
 for(let i=0;i<5;i++) spawnEnemy();
 
 // Controls
-let keys = {};
-document.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
+let keys={};
+document.addEventListener('keydown', e=> keys[e.key.toLowerCase()]=true);
+document.addEventListener('keyup', e=> keys[e.key.toLowerCase()]=false);
 
 // Shooting
-const bullets = [];
+const bullets=[];
+const shootSound = document.getElementById('shootSound');
 document.addEventListener('keydown', e=>{
   if(e.key===' '){
     const bGeo = new THREE.SphereGeometry(0.2,8,8);
     const bMat = new THREE.MeshBasicMaterial({color:0xffff00});
     const bullet = new THREE.Mesh(bGeo,bMat);
-    bullet.position.set(player.position.x,player.position.y+0.5,player.position.z);
+    bullet.position.set(player.position.x, player.position.y+0.5, player.position.z);
     const dir = new THREE.Vector3(Math.sin(playerAngle),0,Math.cos(playerAngle));
-    bullets.push({mesh:bullet,direction:dir});
+    bullets.push({mesh:bullet, direction:dir});
     scene.add(bullet);
+    shootSound.play();
   }
 });
-
-// Mini-map setup
-const minimap = document.getElementById('minimap');
-const miniCtx = minimap.getContext('2d');
 
 // Collision detection
 function checkCollision(a,b){
@@ -111,20 +105,25 @@ function checkCollision(a,b){
 }
 
 // Animate
+const crashSound = document.getElementById('crashSound');
 function animate(){
   requestAnimationFrame(animate);
 
   // Player movement
-  if(keys['w']) playerSpeed = Math.min(playerSpeed+0.1,0.5);
-  else if(keys['s']) playerSpeed = Math.max(playerSpeed-0.1,-0.25);
-  else playerSpeed *= 0.9;
+  if(keys['w']) playerSpeed=Math.min(playerSpeed+0.1,0.5);
+  else if(keys['s']) playerSpeed=Math.max(playerSpeed-0.1,-0.25);
+  else playerSpeed*=0.9;
 
-  if(keys['a']) playerAngle += 0.03;
-  if(keys['d']) playerAngle -= 0.03;
+  if(keys['a']) playerAngle+=0.03;
+  if(keys['d']) playerAngle-=0.03;
 
   player.position.x += Math.sin(playerAngle)*playerSpeed*10;
   player.position.z += Math.cos(playerAngle)*playerSpeed*10;
   player.rotation.y = playerAngle;
+
+  // Ground collision (solid)
+  player.position.x = Math.max(-250, Math.min(player.position.x, 250));
+  player.position.z = Math.max(-250, Math.min(player.position.z, 250));
 
   // Camera follow
   camera.position.x = player.position.x - Math.sin(playerAngle)*10;
@@ -132,13 +131,13 @@ function animate(){
   camera.position.y = 10;
   camera.lookAt(player.position);
 
-  // Move bullets
+  // Bullets movement
   bullets.forEach((b,i)=>{
     b.mesh.position.addScaledVector(b.direction,1);
     if(b.mesh.position.length()>1000) scene.remove(b.mesh), bullets.splice(i,1);
   });
 
-  // Enemy AI
+  // Enemy AI & collisions
   enemies.forEach((e)=>{
     const dx = player.position.x - e.position.x;
     const dz = player.position.z - e.position.z;
@@ -146,23 +145,22 @@ function animate(){
     e.position.x += (dx/dist)*0.05;
     e.position.z += (dz/dist)*0.05;
 
-    // Collision with player
     if(checkCollision(player,e)){
-      playerHealth -= 0.5;
+      playerHealth-=0.5;
+      crashSound.play();
       if(playerHealth<=0){
         alert('Game Over! Final Score: '+score);
         location.reload();
       }
     }
 
-    // Collision with bullets
     bullets.forEach((b,j)=>{
       if(checkCollision(b.mesh,e)){
         scene.remove(b.mesh);
         bullets.splice(j,1);
         scene.remove(e);
         enemies.splice(enemies.indexOf(e),1);
-        score += 10;
+        score+=10;
       }
     });
   });
@@ -170,32 +168,8 @@ function animate(){
   // HUD
   document.getElementById('hud').innerText = `Health: ${Math.floor(playerHealth)} | Score: ${score}`;
 
-  // Mini-map drawing
-  miniCtx.clearRect(0,0,minimap.width,minimap.height);
-  miniCtx.fillStyle = '#333';
-  miniCtx.fillRect(0,0,minimap.width,minimap.height);
-
-  // Buildings on minimap
-  buildings.forEach(b=>{
-    miniCtx.fillStyle='#777';
-    miniCtx.fillRect((b.position.x+250)/500*minimap.width,(b.position.z+250)/500*minimap.height,
-      b.geometry.parameters.width/500*minimap.width, b.geometry.parameters.depth/500*minimap.height);
-  });
-
-  // Player on minimap
-  miniCtx.fillStyle = '#f00';
-  miniCtx.fillRect((player.position.x+250)/500*minimap.width,(player.position.z+250)/500*minimap.height,
-    4,4);
-
-  // Enemies on minimap
-  enemies.forEach(e=>{
-    miniCtx.fillStyle = '#00f';
-    miniCtx.fillRect((e.position.x+250)/500*minimap.width,(e.position.z+250)/500*minimap.height,4,4);
-  });
-
   renderer.render(scene,camera);
 }
-
 animate();
 </script>
 </body>
