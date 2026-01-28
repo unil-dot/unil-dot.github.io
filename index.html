@@ -218,4 +218,201 @@ document.querySelectorAll('nav ul li a, .btn-primary, .btn-secondary').forEach(l
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Korean | Level 0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ================= Reset & Fonts ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', sans-serif; line-height: 1.6; background-color: #fdfdfd; color: #333; }
+        .container { width: 90%; max-width: 1200px; margin: auto; }
+
+        /* ================= Header ================= */
+        header {
+            background: linear-gradient(315deg, #4b6cb7 0%, #182848 74%);
+            color: #fff; padding: 15px 0; position: sticky; top: 0; z-index: 100;
+        }
+        header .logo { font-size: 1.8rem; font-weight: 700; }
+        header nav ul { display: flex; list-style: none; gap: 20px; justify-content: center; }
+        header nav ul li a { color: #fff; text-decoration: none; font-weight: 600; transition: 0.3s; }
+        header nav ul li a:hover { color: #ffd700; }
+
+        /* ================= Hero Section ================= */
+        .hero {
+            background: url('https://images.unsplash.com/photo-1617196036237-7bff0a8e8f1d?auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+            color: #fff; text-align: center; padding: 100px 20px;
+        }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 20px; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; }
+        .btn-primary {
+            background-color: #ffd700; color: #333; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;
+        }
+        .btn-primary:hover { background-color: #ffbf00; }
+
+        /* ================= Levels Section ================= */
+        .levels { padding: 80px 0; background-color: #f5f5f5; text-align: center; }
+        .levels h2 { font-size: 2rem; margin-bottom: 50px; }
+        .level-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .card {
+            background: #fff; padding: 30px; border-radius: 10px; width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .card h3 { margin-bottom: 15px; color: #4b6cb7; }
+        .card p { margin-bottom: 20px; font-size: 0.95rem; }
+        .btn-secondary { background-color: #4b6cb7; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 500; }
+        .btn-secondary:hover { background-color: #3a539b; }
+
+        /* ================= Level 0 Section ================= */
+        .level-section { padding: 80px 0; background-color: #fff; text-align: center; }
+        .level-section h2 { font-size: 2rem; color: #4b6cb7; margin-bottom: 40px; }
+        .lesson-card { background: #f5f5f5; margin: 20px auto; padding: 25px; border-radius: 10px; max-width: 700px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: left; }
+        .lesson-card h3 { color: #182848; margin-bottom: 10px; }
+        .lesson-card p { font-size: 0.95rem; margin-bottom: 15px; }
+        .lesson-card button.btn-lesson {
+            background-color: #4b6cb7; color: #fff; border: none; padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer; margin-bottom: 15px;
+        }
+        .lesson-card button.btn-lesson:hover { background-color: #3a539b; }
+        .lesson-content { display: none; margin-top: 10px; }
+        .lesson-content ul { list-style: disc; margin-left: 20px; }
+
+        /* ================= Footer ================= */
+        footer { background-color: #182848; color: #fff; text-align: center; padding: 20px 0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <h1 class="logo">LearnKorean</h1>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#level0">Level 0</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h2>Start Your Korean Language Journey</h2>
+            <p>Learn Hangul, greetings, and basic numbers with interactive lessons.</p>
+            <a href="#level0" class="btn-primary">Start Level 0</a>
+        </div>
+    </section>
+
+    <!-- Levels -->
+    <section class="levels">
+        <div class="container">
+            <h2>Choose Your Level</h2>
+            <div class="level-cards">
+                <div class="card">
+                    <h3>Level 0</h3>
+                    <p>Absolute beginners. Learn Hangul, basic greetings, and pronunciation.</p>
+                    <a href="#level0" class="btn-secondary">Go to Level 0</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Level 0 Lessons -->
+    <section id="level0" class="level-section">
+        <div class="container">
+            <h2>Level 0: Absolute Beginner</h2>
+
+            <!-- Lesson Cards -->
+            <div class="lesson-card">
+                <h3>Lesson 1: Hangul Consonants</h3>
+                <p>Learn the basic Korean consonants (ㄱ, ㄴ, ㄷ, etc.)</p>
+                <button class="btn-lesson" onclick="showLesson('consonants')">Start Lesson</button>
+                <div id="consonants" class="lesson-content">
+                    <ul>
+                        <li>ㄱ - g/k</li><li>ㄴ - n</li><li>ㄷ - d/t</li><li>ㄹ - r/l</li>
+                        <li>ㅁ - m</li><li>ㅂ - b/p</li><li>ㅅ - s</li><li>ㅇ - ng / silent</li>
+                        <li>ㅈ - j</li><li>ㅊ - ch</li><li>ㅋ - k</li><li>ㅌ - t</li>
+                        <li>ㅍ - p</li><li>ㅎ - h</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <h3>Lesson 2: Hangul Vowels</h3>
+                <p>Learn the basic Korean vowels (ㅏ, ㅑ, ㅓ, etc.)</p>
+                <button class="btn-lesson" onclick="showLesson('vowels')">Start Lesson</button>
+                <div id="vowels" class="lesson-content">
+                    <ul>
+                        <li>ㅏ - a</li><li>ㅑ - ya</li><li>ㅓ - eo</li><li>ㅕ - yeo</li>
+                        <li>ㅗ - o</li><li>ㅛ - yo</li><li>ㅜ - u</li><li>ㅠ - yu</li>
+                        <li>ㅡ - eu</li><li>ㅣ - i</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <h3>Lesson 3: Basic Greetings</h3>
+                <p>Learn simple greetings in Korean</p>
+                <button class="btn-lesson" onclick="showLesson('greetings')">Start Lesson</button>
+                <div id="greetings" class="lesson-content">
+                    <ul>
+                        <li>안녕하세요 (annyeonghaseyo) - Hello</li>
+                        <li>안녕히 가세요 (annyeonghi gaseyo) - Goodbye (leaving)</li>
+                        <li>안녕히 계세요 (annyeonghi gyeseyo) - Goodbye (staying)</li>
+                        <li>감사합니다 (gamsahamnida) - Thank you</li>
+                        <li>죄송합니다 (joesonghamnida) - Sorry</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <h3>Lesson 4: Numbers 1-10</h3>
+                <p>Learn Korean numbers from 1 to 10</p>
+                <button class="btn-lesson" onclick="showLesson('numbers')">Start Lesson</button>
+                <div id="numbers" class="lesson-content">
+                    <ul>
+                        <li>1 - 일 (il)</li><li>2 - 이 (i)</li><li>3 - 삼 (sam)</li><li>4 - 사 (sa)</li>
+                        <li>5 - 오 (o)</li><li>6 - 육 (yuk)</li><li>7 - 칠 (chil)</li><li>8 - 팔 (pal)</li>
+                        <li>9 - 구 (gu)</li><li>10 - 십 (sip)</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 LearnKorean. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ================= JS ================= -->
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('nav ul li a, .btn-primary, .btn-secondary').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if(this.hash !== "") {
+                    e.preventDefault();
+                    const hash = this.hash;
+                    document.querySelector(hash).scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Show/hide lessons
+        function showLesson(lessonId) {
+            document.querySelectorAll('.lesson-content').forEach(l => l.style.display = 'none');
+            const lesson = document.getElementById(lessonId);
+            if(lesson) lesson.style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
 
