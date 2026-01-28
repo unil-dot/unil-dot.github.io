@@ -1,20 +1,130 @@
-<script type="importmap">
-  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-</script>
-<script type="module" src="World.js"></script>
-<script type="module" src="Physics.js"></script>
-<script type="module" src="Player.js"></script>
-<script type="module" src="Camera.js"></script>
-<script type="module" src="Vehicle.js"></script>
-<script type="module" src="App.js"></script> ```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open World 3D Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevents scrollbars */
+            background-color: #000;
+            font-family: 'Arial', sans-serif;
+        }
 
----
+        /* The Aiming Reticle */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid black;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* Allows clicking through it */
+            display: none; /* Only show when pointer is locked */
+        }
 
-### Is it "Ok" now?
-**Yes, technically.** You have the core mechanics:
-1.  **Physics** (Gravity/Collisions)
-2.  **Player Movement** (WASD)
-3.  **Camera** (Mouse Aiming)
-4.  **Vehicle** (Driving system)
+        #instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
 
-**Would you like me to write the `App.js` file for you now? It will tie all these pieces together so you can actually open your browser and see the game running.**
+    <div id="instructions">
+        <h1>GTA 6 Prototype</h1>
+        <p>Click to Start</p>
+        <p>(WASD to Move | Mouse to Look | Space to Brake)</p>
+    </div>
+
+    <div id="crosshair"></div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { World } from './World.js';
+        import { Player } from './Player.js';
+        import { CameraManager } from './Camera.js';
+        import { Vehicle } from './Vehicle.js';
+
+        // UI Elements
+        const instructions = document.getElementById('instructions');
+        const crosshair = document.getElementById('crosshair');
+
+        // Setup Scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Initialize Game Classes
+        const world = new World();
+        scene.add(world.scene); // Add world visuals to main scene
+
+        const player = new Player(scene, world.physicsWorld, camera);
+        const cameraManager = new CameraManager(camera, player.mesh);
+        const vehicle = new Vehicle(scene, world.physicsWorld);
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Pointer Lock Logic
+        instructions.addEventListener('click', () => {
+            document.body.requestPointerLock();
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement === document.body) {
+                instructions.style.display = 'none';
+                crosshair.style.display = 'block';
+            } else {
+                instructions.style.display = 'block';
+                crosshair.style.display = 'none';
+            }
+        });
+
+        // Game Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const deltaTime = clock.getDelta();
+
+            world.update(deltaTime);
+            player.update();
+            vehicle.update();
+            cameraManager.update(deltaTime);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
