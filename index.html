@@ -6,13 +6,20 @@
 <title>Mini GTA 3D Browser</title>
 <style>
 body { margin:0; overflow:hidden; background:#000; font-family:sans-serif; }
-#hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black; }
-#instructions { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:24px; cursor:pointer; }
+#hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black; z-index:2; }
+#instructions {
+  position:absolute;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  color:#fff; font-size:36px;
+  display:flex; justify-content:center; align-items:center;
+  cursor:pointer; z-index:5;
+}
 </style>
 </head>
 <body>
 <div id="hud">Health: 100 | Score: 0</div>
-<div id="instructions">Click to play and enable mouse control</div>
+<div id="instructions">Click to start the game</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
@@ -31,7 +38,7 @@ let renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Lighting
+// Lights
 let light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(50,100,50);
 scene.add(light);
@@ -63,7 +70,7 @@ camera.position.set(player.x, player.y+2, player.z);
 let controls = new THREE.PointerLockControls(camera, document.body);
 document.getElementById('instructions').addEventListener('click', ()=>{
     controls.lock();
-    document.getElementById('instructions').style.display = 'none';
+    document.getElementById('instructions').style.display='none';
 });
 
 // Movement
@@ -87,16 +94,18 @@ for(let i=0;i<5;i++) spawnEnemy();
 let bullets=[];
 const shootSound = document.getElementById('shootSound');
 document.addEventListener('mousedown', ()=>{
-    let bGeo = new THREE.SphereGeometry(0.2,8,8);
-    let bMat = new THREE.MeshBasicMaterial({color:0xffff00});
-    let bullet = new THREE.Mesh(bGeo,bMat);
-    bullet.position.set(player.x, player.y+0.5, player.z);
+    if(controls.isLocked){
+        let bGeo = new THREE.SphereGeometry(0.2,8,8);
+        let bMat = new THREE.MeshBasicMaterial({color:0xffff00});
+        let bullet = new THREE.Mesh(bGeo,bMat);
+        bullet.position.set(player.x, player.y+0.5, player.z);
 
-    let dir = new THREE.Vector3(0,0,-1);
-    dir.applyQuaternion(camera.quaternion);
-    bullets.push({mesh:bullet, direction:dir});
-    scene.add(bullet);
-    shootSound.play();
+        let dir = new THREE.Vector3(0,0,-1);
+        dir.applyQuaternion(camera.quaternion);
+        bullets.push({mesh:bullet, direction:dir});
+        scene.add(bullet);
+        shootSound.play();
+    }
 });
 
 // Collision detection
@@ -112,25 +121,31 @@ function animate(){
     requestAnimationFrame(animate);
 
     // Player movement
-    let dir = new THREE.Vector3();
-    controls.getDirection(dir);
-    dir.y=0; dir.normalize();
+    if(controls.isLocked){
+        let dir = new THREE.Vector3();
+        controls.getDirection(dir);
+        dir.y=0; dir.normalize();
 
-    if(keys['w']) { player.x += dir.x*player.speed; player.z += dir.z*player.speed; }
-    if(keys['s']) { player.x -= dir.x*player.speed; player.z -= dir.z*player.speed; }
-    if(keys['a']) { 
-        let strafe = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), dir).normalize();
-        player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
-    }
-    if(keys['d']) { 
-        let strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
-        player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
+        if(keys['w']) { player.x += dir.x*player.speed; player.z += dir.z*player.speed; }
+        if(keys['s']) { player.x -= dir.x*player.speed; player.z -= dir.z*player.speed; }
+        if(keys['a']) { 
+            let strafe = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), dir).normalize();
+            player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
+        }
+        if(keys['d']) { 
+            let strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
+            player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
+        }
+
+        // Boundaries
+        player.x = Math.max(-250, Math.min(player.x,250));
+        player.z = Math.max(-250, Math.min(player.z,250));
     }
 
     // Camera follow
     camera.position.set(player.x, player.y+2, player.z);
 
-    // Bullets movement
+    // Bullets
     bullets.forEach((b,i)=>{
         b.mesh.position.addScaledVector(b.direction,1);
         if(b.mesh.position.length()>1000) scene.remove(b.mesh), bullets.splice(i,1);
@@ -144,11 +159,11 @@ function animate(){
         e.position.x += (dx/dist)*0.05;
         e.position.z += (dz/dist)*0.05;
 
-        if(collide(player, e)){
+        if(collide(player,e)){
             player.health -= 0.5;
             crashSound.play();
             if(player.health<=0){
-                alert("Game Over! Score: 0");
+                alert("Game Over! Score: "+(5-enemies.length));
                 location.reload();
             }
         }
@@ -163,9 +178,7 @@ function animate(){
         });
     });
 
-    // HUD
     document.getElementById('hud').innerText = `Health: ${Math.floor(player.health)} | Score: ${5-enemies.length}`;
-
     renderer.render(scene,camera);
 }
 animate();
