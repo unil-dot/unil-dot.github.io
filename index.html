@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini GTA 3D</title>
+<title>Mini GTA 3D Browser</title>
 <style>
-body { margin:0; overflow:hidden; background:#000; font-family:sans-serif;}
+body { margin:0; overflow:hidden; background:#000; font-family:sans-serif; }
 #hud { position:absolute; top:10px; left:10px; color:#fff; font-size:20px; text-shadow:2px 2px 5px black; }
 #instructions { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:24px; cursor:pointer; }
 </style>
@@ -17,162 +17,156 @@ body { margin:0; overflow:hidden; background:#000; font-family:sans-serif;}
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
 
-<audio id="shootSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
-<audio id="crashSound" src="https://freesound.org/data/previews/198/198841_2859977-lq.mp3"></audio>
+<audio id="shootSound" src="https://actions.google.com/sounds/v1/weapons/medium_gun_shot.ogg"></audio>
+<audio id="crashSound" src="https://actions.google.com/sounds/v1/impacts/crash.ogg"></audio>
 
 <script>
-// Scene and camera
-const scene = new THREE.Scene();
+let scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(0,5,10);
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 10);
 
-// Renderer
-const renderer = new THREE.WebGLRenderer({antialias:true});
+let renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Lights
-const light = new THREE.DirectionalLight(0xffffff,1);
+// Lighting
+let light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(50,100,50);
 scene.add(light);
 scene.add(new THREE.AmbientLight(0x404040));
 
 // Ground
-const groundGeo = new THREE.PlaneGeometry(500,500,50,50);
-const groundMat = new THREE.MeshStandardMaterial({color:0x555555});
-const ground = new THREE.Mesh(groundGeo, groundMat);
+let groundGeo = new THREE.PlaneGeometry(500,500);
+let groundMat = new THREE.MeshStandardMaterial({color:0x555555});
+let ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
 // Buildings
-const buildings = [];
-for(let i=0;i<30;i++){
-  const geo = new THREE.BoxGeometry(Math.random()*10+10, Math.random()*30+10, Math.random()*10+10);
-  const mat = new THREE.MeshStandardMaterial({color: Math.random()*0xffffff});
-  const b = new THREE.Mesh(geo, mat);
-  b.position.set((Math.random()-0.5)*400, geo.parameters.height/2, (Math.random()-0.5)*400);
-  buildings.push(b);
-  scene.add(b);
+let buildings = [];
+for(let i=0;i<20;i++){
+    let geo = new THREE.BoxGeometry(Math.random()*10+10, Math.random()*30+10, Math.random()*10+10);
+    let mat = new THREE.MeshStandardMaterial({color: Math.random()*0xffffff});
+    let b = new THREE.Mesh(geo, mat);
+    b.position.set((Math.random()-0.5)*400, geo.parameters.height/2, (Math.random()-0.5)*400);
+    buildings.push(b);
+    scene.add(b);
 }
 
-// Player (invisible box for collision)
-const player = new THREE.Mesh(new THREE.BoxGeometry(2,1,4), new THREE.MeshBasicMaterial({visible:false}));
-player.position.set(0,0.5,0);
-scene.add(player);
-let playerSpeed=0, playerHealth=100, score=0;
+// Player
+let player = {x:0, z:0, y:0.5, health:100, speed:0.5};
+camera.position.set(player.x, player.y+2, player.z);
 
-// Enemies
-const enemies = [];
-function spawnEnemy(){
-  const geo = new THREE.BoxGeometry(2,1,4);
-  const mat = new THREE.MeshStandardMaterial({color:0x0000ff});
-  const e = new THREE.Mesh(geo,mat);
-  e.position.set((Math.random()-0.5)*400,0.5,(Math.random()-0.5)*400);
-  enemies.push(e);
-  scene.add(e);
-}
-for(let i=0;i<5;i++) spawnEnemy();
-
-// Controls
-const controls = new THREE.PointerLockControls(camera, document.body);
+// PointerLockControls
+let controls = new THREE.PointerLockControls(camera, document.body);
 document.getElementById('instructions').addEventListener('click', ()=>{
-  controls.lock();
-  document.getElementById('instructions').style.display = 'none';
+    controls.lock();
+    document.getElementById('instructions').style.display = 'none';
 });
 
+// Movement
 let keys={};
 document.addEventListener('keydown', e=> keys[e.key.toLowerCase()]=true);
 document.addEventListener('keyup', e=> keys[e.key.toLowerCase()]=false);
 
-// Shooting
-const bullets=[];
+// Enemies
+let enemies = [];
+function spawnEnemy(){
+    let geo = new THREE.BoxGeometry(2,1,4);
+    let mat = new THREE.MeshStandardMaterial({color:0x0000ff});
+    let e = new THREE.Mesh(geo, mat);
+    e.position.set((Math.random()-0.5)*400, 0.5, (Math.random()-0.5)*400);
+    enemies.push(e);
+    scene.add(e);
+}
+for(let i=0;i<5;i++) spawnEnemy();
+
+// Bullets
+let bullets=[];
 const shootSound = document.getElementById('shootSound');
-document.addEventListener('mousedown', e=>{
-  const bGeo = new THREE.SphereGeometry(0.2,8,8);
-  const bMat = new THREE.MeshBasicMaterial({color:0xffff00});
-  const bullet = new THREE.Mesh(bGeo,bMat);
-  bullet.position.set(player.position.x, player.position.y+0.5, player.position.z);
-  const vector = new THREE.Vector3(0,0,-1);
-  vector.applyQuaternion(camera.quaternion);
-  bullets.push({mesh:bullet, direction:vector});
-  scene.add(bullet);
-  shootSound.play();
+document.addEventListener('mousedown', ()=>{
+    let bGeo = new THREE.SphereGeometry(0.2,8,8);
+    let bMat = new THREE.MeshBasicMaterial({color:0xffff00});
+    let bullet = new THREE.Mesh(bGeo,bMat);
+    bullet.position.set(player.x, player.y+0.5, player.z);
+
+    let dir = new THREE.Vector3(0,0,-1);
+    dir.applyQuaternion(camera.quaternion);
+    bullets.push({mesh:bullet, direction:dir});
+    scene.add(bullet);
+    shootSound.play();
 });
 
 // Collision detection
-function checkCollision(a,b){
-  return a.position.x - 1 < b.position.x + b.geometry.parameters.width/2 &&
-         a.position.x + 1 > b.position.x - b.geometry.parameters.width/2 &&
-         a.position.z - 2 < b.position.z + b.geometry.parameters.depth/2 &&
-         a.position.z + 2 > b.position.z - b.geometry.parameters.depth/2;
+function collide(a,b){ 
+    return Math.abs(a.x - b.position.x)<2 && Math.abs(a.z - b.position.z)<2; 
 }
 
+// Crash sound
 const crashSound = document.getElementById('crashSound');
 
 // Animate
 function animate(){
-  requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 
-  // Player movement
-  let forward = keys['w']?0.5:0, backward=keys['s']?0.25:0;
-  let left = keys['a']?1:0, right = keys['d']?1:0;
+    // Player movement
+    let dir = new THREE.Vector3();
+    controls.getDirection(dir);
+    dir.y=0; dir.normalize();
 
-  const dir = new THREE.Vector3();
-  controls.getDirection(dir);
-  dir.y=0;
-  dir.normalize();
-  player.position.addScaledVector(dir, forward-backward);
-
-  const strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0));
-  player.position.addScaledVector(strafe, right-left);
-
-  // Map boundaries
-  player.position.x = Math.max(-250, Math.min(player.position.x, 250));
-  player.position.z = Math.max(-250, Math.min(player.position.z, 250));
-
-  // Camera follow
-  camera.position.set(player.position.x, player.position.y+2, player.position.z);
-
-  // Bullets movement
-  bullets.forEach((b,i)=>{
-    b.mesh.position.addScaledVector(b.direction,1);
-    if(b.mesh.position.length()>1000) scene.remove(b.mesh), bullets.splice(i,1);
-  });
-
-  // Enemy AI
-  enemies.forEach((e)=>{
-    const dx = player.position.x - e.position.x;
-    const dz = player.position.z - e.position.z;
-    const dist = Math.sqrt(dx*dx + dz*dz);
-    e.position.x += (dx/dist)*0.05;
-    e.position.z += (dz/dist)*0.05;
-
-    if(checkCollision(player,e)){
-      playerHealth-=0.5;
-      crashSound.play();
-      if(playerHealth<=0){
-        alert('Game Over! Final Score: '+score);
-        location.reload();
-      }
+    if(keys['w']) { player.x += dir.x*player.speed; player.z += dir.z*player.speed; }
+    if(keys['s']) { player.x -= dir.x*player.speed; player.z -= dir.z*player.speed; }
+    if(keys['a']) { 
+        let strafe = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), dir).normalize();
+        player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
+    }
+    if(keys['d']) { 
+        let strafe = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
+        player.x += strafe.x*player.speed; player.z += strafe.z*player.speed;
     }
 
-    bullets.forEach((b,j)=>{
-      if(checkCollision(b.mesh,e)){
-        scene.remove(b.mesh);
-        bullets.splice(j,1);
-        scene.remove(e);
-        enemies.splice(enemies.indexOf(e),1);
-        score+=10;
-      }
+    // Camera follow
+    camera.position.set(player.x, player.y+2, player.z);
+
+    // Bullets movement
+    bullets.forEach((b,i)=>{
+        b.mesh.position.addScaledVector(b.direction,1);
+        if(b.mesh.position.length()>1000) scene.remove(b.mesh), bullets.splice(i,1);
     });
-  });
 
-  // HUD
-  document.getElementById('hud').innerText = `Health: ${Math.floor(playerHealth)} | Score: ${score}`;
+    // Enemy AI
+    enemies.forEach((e)=>{
+        let dx = player.x - e.position.x;
+        let dz = player.z - e.position.z;
+        let dist = Math.sqrt(dx*dx+dz*dz);
+        e.position.x += (dx/dist)*0.05;
+        e.position.z += (dz/dist)*0.05;
 
-  renderer.render(scene,camera);
+        if(collide(player, e)){
+            player.health -= 0.5;
+            crashSound.play();
+            if(player.health<=0){
+                alert("Game Over! Score: 0");
+                location.reload();
+            }
+        }
+
+        bullets.forEach((b,j)=>{
+            if(collide({x:b.mesh.position.x,z:b.mesh.position.z},e)){
+                scene.remove(b.mesh);
+                bullets.splice(j,1);
+                scene.remove(e);
+                enemies.splice(enemies.indexOf(e),1);
+            }
+        });
+    });
+
+    // HUD
+    document.getElementById('hud').innerText = `Health: ${Math.floor(player.health)} | Score: ${5-enemies.length}`;
+
+    renderer.render(scene,camera);
 }
 animate();
 </script>
