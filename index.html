@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini GTA 5</title>
+<title>Mini GTA 5 Top-Down</title>
 <style>
-  body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif;}
-  canvas { border: 2px solid #fff; background: #2c3e50; }
+  body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+  canvas { display: block; margin: 0 auto; background: #2c3e50; border: 2px solid #fff; }
   #score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 24px; text-shadow: 2px 2px 5px black;}
 </style>
 </head>
 <body>
 <div id="score">Score: 0</div>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+<canvas id="gameCanvas" width="1000" height="600"></canvas>
+
 <script>
+// Game setup
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -22,94 +24,119 @@ let keys = {};
 let bullets = [];
 let enemies = [];
 
-// Map / buildings
-const buildings = [
-  {x: 100, y: 100, width: 200, height: 50},
-  {x: 400, y: 50, width: 50, height: 200},
-  {x: 200, y: 400, width: 300, height: 50},
-  {x: 600, y: 300, width: 50, height: 200}
-];
+// Large map
+const mapWidth = 3000;
+const mapHeight = 2000;
 
-// Player car
-let player = {x: 50, y: 50, width: 40, height: 60, speed: 4};
+// Player
+let player = {x: mapWidth/2, y: mapHeight/2, width: 40, height: 40, speed: 5};
+
+// Buildings / obstacles
+const buildings = [];
+for(let i=0;i<50;i++){
+  buildings.push({x: Math.random()*mapWidth, y: Math.random()*mapHeight, width: 100, height: 80});
+}
+
+// Enemy spawn
+function spawnEnemy(){
+  let x = Math.random()*mapWidth;
+  let y = Math.random()*mapHeight;
+  enemies.push({x:x, y:y, width:40, height:40, speed:2 + Math.random()*2});
+}
 
 // Controls
-document.addEventListener('keydown', e => keys[e.key] = true);
-document.addEventListener('keyup', e => keys[e.key] = false);
+document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
 // Shoot bullets
 document.addEventListener('keydown', e => {
   if(e.key === ' ') {
-    bullets.push({x: player.x + player.width/2 - 5, y: player.y, width: 10, height: 20, speed: 8});
+    bullets.push({x: player.x + player.width/2 - 5, y: player.y, width: 10, height: 20, speed: 10});
   }
 });
 
-// Spawn enemies
-function spawnEnemy() {
-  let x = Math.random() * (canvas.width - 40);
-  let y = -40;
-  enemies.push({x: x, y: y, width: 40, height: 60, speed: Math.random()*2 + 1});
-}
-
-// Collision check
-function checkCollision(a, b) {
+// Collision
+function checkCollision(a,b){
   return a.x < b.x + b.width && a.x + a.width > b.x &&
          a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
-// Game loop
-function update() {
+// Camera
+let camera = {x: 0, y: 0, width: canvas.width, height: canvas.height};
+
+function update(){
+  // Move player
+  if(keys['w']) player.y -= player.speed;
+  if(keys['s']) player.y += player.speed;
+  if(keys['a']) player.x -= player.speed;
+  if(keys['d']) player.x += player.speed;
+
+  // Keep player inside map
+  player.x = Math.max(0, Math.min(player.x, mapWidth - player.width));
+  player.y = Math.max(0, Math.min(player.y, mapHeight - player.height));
+
+  // Update camera
+  camera.x = player.x + player.width/2 - canvas.width/2;
+  camera.y = player.y + player.height/2 - canvas.height/2;
+  camera.x = Math.max(0, Math.min(camera.x, mapWidth - canvas.width));
+  camera.y = Math.max(0, Math.min(camera.y, mapHeight - canvas.height));
+
+  // Clear screen
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // Move player
-  if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-  if(keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
-  if(keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
-  if(keys['ArrowDown'] && player.y + player.height < canvas.height) player.y += player.speed;
+  // Draw map (just gray background)
+  ctx.fillStyle = '#34495e';
+  ctx.fillRect(-camera.x, -camera.y, mapWidth, mapHeight);
 
   // Draw buildings
   ctx.fillStyle = '#7f8c8d';
-  buildings.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+  buildings.forEach(b => {
+    ctx.fillRect(b.x - camera.x, b.y - camera.y, b.width, b.height);
+  });
 
   // Draw player
   ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+  ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
 
-  // Move bullets
-  bullets.forEach((b, i) => {
+  // Bullets
+  bullets.forEach((b,i)=>{
     b.y -= b.speed;
     ctx.fillStyle = '#f1c40f';
-    ctx.fillRect(b.x, b.y, b.width, b.height);
-    if(b.y + b.height < 0) bullets.splice(i,1);
+    ctx.fillRect(b.x - camera.x, b.y - camera.y, b.width, b.height);
+    if(b.y < 0) bullets.splice(i,1);
   });
 
   // Spawn enemies randomly
-  if(Math.random() < 0.02) spawnEnemy();
+  if(Math.random() < 0.01) spawnEnemy();
 
   // Move enemies
-  enemies.forEach((e, i) => {
-    e.y += e.speed;
+  enemies.forEach((e,i)=>{
+    // Move towards player
+    let dx = player.x - e.x;
+    let dy = player.y - e.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    e.x += (dx/dist)*e.speed;
+    e.y += (dy/dist)*e.speed;
+
+    // Draw enemy
     ctx.fillStyle = '#3498db';
-    ctx.fillRect(e.x, e.y, e.width, e.height);
+    ctx.fillRect(e.x - camera.x, e.y - camera.y, e.width, e.height);
 
     // Collision with player
-    if(checkCollision(player, e)) {
+    if(checkCollision(player,e)){
       alert('Game Over! Final Score: ' + score);
       location.reload();
     }
 
     // Collision with bullets
-    bullets.forEach((b,j) => {
-      if(checkCollision(b, e)) {
+    bullets.forEach((b,j)=>{
+      if(checkCollision(b,e)){
         bullets.splice(j,1);
         enemies.splice(i,1);
         score += 10;
         document.getElementById('score').innerText = `Score: ${score}`;
       }
     });
-
-    // Remove enemy if off-screen
-    if(e.y > canvas.height) enemies.splice(i,1);
   });
 
   requestAnimationFrame(update);
@@ -119,4 +146,3 @@ update();
 </script>
 </body>
 </html>
-
