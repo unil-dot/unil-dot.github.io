@@ -3,54 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dodge Master Pro</title>
+<title>Mini GTA 5</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
-  body { background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  canvas { border-radius: 15px; background: rgba(255,255,255,0.05); box-shadow: 0 0 20px #000; }
-  #score { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 2rem; text-shadow: 2px 2px 5px black; }
+  body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif;}
+  canvas { border: 2px solid #fff; background: #2c3e50; }
+  #score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 24px; text-shadow: 2px 2px 5px black;}
 </style>
 </head>
 <body>
 <div id="score">Score: 0</div>
-<canvas id="gameCanvas"></canvas>
-<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop autoplay></audio>
-<audio id="hitSound" src="https://www.soundjay.com/button/beep-07.mp3"></audio>
-<audio id="powerSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
-
+<canvas id="gameCanvas" width="800" height="600"></canvas>
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 500;
-canvas.height = 700;
 
-let player = { x: canvas.width/2 - 25, y: canvas.height - 80, width: 50, height: 50, speed: 7 };
-let keys = {};
-let obstacles = [];
-let powerUps = [];
 let score = 0;
-let multiplier = 1;
-let gameOver = false;
+let keys = {};
+let bullets = [];
+let enemies = [];
+
+// Map / buildings
+const buildings = [
+  {x: 100, y: 100, width: 200, height: 50},
+  {x: 400, y: 50, width: 50, height: 200},
+  {x: 200, y: 400, width: 300, height: 50},
+  {x: 600, y: 300, width: 50, height: 200}
+];
+
+// Player car
+let player = {x: 50, y: 50, width: 40, height: 60, speed: 4};
 
 // Controls
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// Spawn obstacles
-function spawnObstacle() {
-  let width = Math.random() * 50 + 30;
-  let x = Math.random() * (canvas.width - width);
-  obstacles.push({ x: x, y: -50, width: width, height: 20, speed: Math.random() * 3 + 2, color: `hsl(${Math.random()*360},80%,60%)` });
+// Shoot bullets
+document.addEventListener('keydown', e => {
+  if(e.key === ' ') {
+    bullets.push({x: player.x + player.width/2 - 5, y: player.y, width: 10, height: 20, speed: 8});
+  }
+});
+
+// Spawn enemies
+function spawnEnemy() {
+  let x = Math.random() * (canvas.width - 40);
+  let y = -40;
+  enemies.push({x: x, y: y, width: 40, height: 60, speed: Math.random()*2 + 1});
 }
 
-// Spawn power-up
-function spawnPowerUp() {
-  let size = 30;
-  let x = Math.random() * (canvas.width - size);
-  powerUps.push({ x: x, y: -50, width: size, height: size, speed: 2 });
-}
-
-// Collision detection
+// Collision check
 function checkCollision(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x &&
          a.y < b.y + b.height && a.y + a.height > b.y;
@@ -58,57 +59,57 @@ function checkCollision(a, b) {
 
 // Game loop
 function update() {
-  if(gameOver) return;
-
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   // Move player
   if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
   if(keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
+  if(keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+  if(keys['ArrowDown'] && player.y + player.height < canvas.height) player.y += player.speed;
+
+  // Draw buildings
+  ctx.fillStyle = '#7f8c8d';
+  buildings.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 
   // Draw player
-  ctx.fillStyle = '#ff4757';
-  ctx.beginPath();
-  ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2, 0, Math.PI*2);
-  ctx.fill();
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
 
-  // Obstacles
-  if(Math.random() < 0.02) spawnObstacle();
-  obstacles.forEach((ob, index) => {
-    ob.y += ob.speed;
-    ctx.fillStyle = ob.color;
-    ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
-
-    if(checkCollision(player, ob)) {
-      gameOver = true;
-      document.getElementById('score').innerText = `Game Over! Final Score: ${score}`;
-      document.getElementById('hitSound').play();
-    }
-
-    if(ob.y > canvas.height) {
-      obstacles.splice(index, 1);
-      score += 1 * multiplier;
-      document.getElementById('score').innerText = `Score: ${score}`;
-      if(score % 10 === 0) multiplier++; // Increase multiplier every 10 points
-    }
+  // Move bullets
+  bullets.forEach((b, i) => {
+    b.y -= b.speed;
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(b.x, b.y, b.width, b.height);
+    if(b.y + b.height < 0) bullets.splice(i,1);
   });
 
-  // Power-ups
-  if(Math.random() < 0.005) spawnPowerUp();
-  powerUps.forEach((p, index) => {
-    p.y += p.speed;
-    ctx.fillStyle = '#f1c40f';
-    ctx.beginPath();
-    ctx.arc(p.x + p.width/2, p.y + p.height/2, p.width/2, 0, Math.PI*2);
-    ctx.fill();
+  // Spawn enemies randomly
+  if(Math.random() < 0.02) spawnEnemy();
 
-    if(checkCollision(player, p)) {
-      multiplier += 1;
-      powerUps.splice(index, 1);
-      document.getElementById('powerSound').play();
+  // Move enemies
+  enemies.forEach((e, i) => {
+    e.y += e.speed;
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(e.x, e.y, e.width, e.height);
+
+    // Collision with player
+    if(checkCollision(player, e)) {
+      alert('Game Over! Final Score: ' + score);
+      location.reload();
     }
 
-    if(p.y > canvas.height) powerUps.splice(index, 1);
+    // Collision with bullets
+    bullets.forEach((b,j) => {
+      if(checkCollision(b, e)) {
+        bullets.splice(j,1);
+        enemies.splice(i,1);
+        score += 10;
+        document.getElementById('score').innerText = `Score: ${score}`;
+      }
+    });
+
+    // Remove enemy if off-screen
+    if(e.y > canvas.height) enemies.splice(i,1);
   });
 
   requestAnimationFrame(update);
@@ -118,3 +119,4 @@ update();
 </script>
 </body>
 </html>
+
