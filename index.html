@@ -3,36 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dodge Master</title>
+<title>Dodge Master Pro</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
   body { background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  canvas { background: rgba(255,255,255,0.05); border: 2px solid #fff; border-radius: 15px; }
+  canvas { border-radius: 15px; background: rgba(255,255,255,0.05); box-shadow: 0 0 20px #000; }
   #score { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 2rem; text-shadow: 2px 2px 5px black; }
 </style>
 </head>
 <body>
 <div id="score">Score: 0</div>
-<canvas id="gameCanvas" width="500" height="700"></canvas>
+<canvas id="gameCanvas"></canvas>
+<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop autoplay></audio>
+<audio id="hitSound" src="https://www.soundjay.com/button/beep-07.mp3"></audio>
+<audio id="powerSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
+
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+canvas.width = 500;
+canvas.height = 700;
 
-let player = { x: canvas.width/2 - 25, y: canvas.height - 60, width: 50, height: 50, speed: 7 };
+let player = { x: canvas.width/2 - 25, y: canvas.height - 80, width: 50, height: 50, speed: 7 };
 let keys = {};
 let obstacles = [];
+let powerUps = [];
 let score = 0;
+let multiplier = 1;
 let gameOver = false;
 
-// Player movement
+// Controls
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// Create obstacles
+// Spawn obstacles
 function spawnObstacle() {
   let width = Math.random() * 50 + 30;
   let x = Math.random() * (canvas.width - width);
-  obstacles.push({ x: x, y: -50, width: width, height: 20, speed: Math.random() * 3 + 2 });
+  obstacles.push({ x: x, y: -50, width: width, height: 20, speed: Math.random() * 3 + 2, color: `hsl(${Math.random()*360},80%,60%)` });
+}
+
+// Spawn power-up
+function spawnPowerUp() {
+  let size = 30;
+  let x = Math.random() * (canvas.width - size);
+  powerUps.push({ x: x, y: -50, width: size, height: size, speed: 2 });
 }
 
 // Collision detection
@@ -53,25 +68,47 @@ function update() {
 
   // Draw player
   ctx.fillStyle = '#ff4757';
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+  ctx.beginPath();
+  ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2, 0, Math.PI*2);
+  ctx.fill();
 
   // Obstacles
   if(Math.random() < 0.02) spawnObstacle();
   obstacles.forEach((ob, index) => {
     ob.y += ob.speed;
-    ctx.fillStyle = '#1e90ff';
+    ctx.fillStyle = ob.color;
     ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
 
     if(checkCollision(player, ob)) {
       gameOver = true;
       document.getElementById('score').innerText = `Game Over! Final Score: ${score}`;
+      document.getElementById('hitSound').play();
     }
 
     if(ob.y > canvas.height) {
       obstacles.splice(index, 1);
-      score++;
+      score += 1 * multiplier;
       document.getElementById('score').innerText = `Score: ${score}`;
+      if(score % 10 === 0) multiplier++; // Increase multiplier every 10 points
     }
+  });
+
+  // Power-ups
+  if(Math.random() < 0.005) spawnPowerUp();
+  powerUps.forEach((p, index) => {
+    p.y += p.speed;
+    ctx.fillStyle = '#f1c40f';
+    ctx.beginPath();
+    ctx.arc(p.x + p.width/2, p.y + p.height/2, p.width/2, 0, Math.PI*2);
+    ctx.fill();
+
+    if(checkCollision(player, p)) {
+      multiplier += 1;
+      powerUps.splice(index, 1);
+      document.getElementById('powerSound').play();
+    }
+
+    if(p.y > canvas.height) powerUps.splice(index, 1);
   });
 
   requestAnimationFrame(update);
